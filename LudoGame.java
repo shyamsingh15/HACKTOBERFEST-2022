@@ -8,6 +8,8 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
 
 public class LudoGame {
     static Scanner sc = new Scanner(System.in);
@@ -19,21 +21,21 @@ public class LudoGame {
 
         List<Player> playerList = new ArrayList<>();
         List<Integer> orderList = createPlayerList(n,playerList);
-        System.out.println("Order of Players to play the game");
+        playerList.forEach(player -> {System.out.println(player.id+" "+player.score);});
         orderList.forEach(System.out::println);
         List<Rank> rankList = playGame(playerList,n,orderList);
         showRankList(rankList);
 
         //===========database work====================
-        Configuration configuration = new Configuration();
-        configuration.configure("hibernate.cfg.xml");
-        SessionFactory sessionFactory = configuration.buildSessionFactory();
-        Session session = sessionFactory.openSession();
-        Transaction transaction = session.beginTransaction();
-        rankList.forEach(Rank -> session.save(Rank));
-        transaction.commit();
-        session.close();
-        System.out.println("Rank List is stored in database");
+//        Configuration configuration = new Configuration();
+//        configuration.configure("hibernate.cfg.xml");
+//        SessionFactory sessionFactory = configuration.buildSessionFactory();
+//        Session session = sessionFactory.openSession();
+//        Transaction transaction = session.beginTransaction();
+//        rankList.forEach(Rank -> session.save(Rank));
+//        transaction.commit();
+//        session.close();
+//        System.out.println("Rank List is stored in database");
         //================================================
     }
 
@@ -44,6 +46,23 @@ public class LudoGame {
             playerList.add(new Player((i + 1)));
             order.add((i+1));
         }
+//        while(playerList.size()!=n)
+//        {
+//            int flag = 0;
+//            int id= random.nextInt(n);
+//            Player player = new Player((id+1));
+//            for(int i=0;i<playerList.size();i++) {
+//                if(playerList.get(i).id == (id+1))
+//                {
+//                    flag=1;
+//                    break;
+//                }
+//            }
+//              if(flag==0)
+//                playerList.add(player);
+//        }
+//        //showCurrentScore(playerList);
+
         Collections.shuffle(order);
 
         return order;
@@ -56,6 +75,7 @@ public class LudoGame {
         int next=0;
         int totalScore=0;
         int id;
+        Player tempPlayer = new Player(-1);
         while(rankList.size()!=playerList.size()){
 
             while(true) {
@@ -68,19 +88,19 @@ public class LudoGame {
             }
             System.out.print("Player "+ (id) + " it's your turn press r to roll the dice:: ");
             checkValidInput(id);
-            int num = random.nextInt(10);
-            //int num = sc.nextInt();
-            System.out.println("Your Current Score: "+(num+1));
-            totalScore = addScore(playerList,(num+1),id);
+            //int num = random.nextInt(10);
+            int num = sc.nextInt();
+            System.out.println("Your Current Score: "+(num));
+            totalScore = addScore(playerList,(num),id);
 
-            while((num+1)==10)
+            while((num)==10)
             {
                 System.out.print("Congratulations Player "+ (id) + " You got another chance press r to roll the dice again:: ");
                 checkValidInput(id);
                 //num = random.nextInt(10);
                 num= sc.nextInt();
-                System.out.println("Your Current Score: "+(num+1));
-                totalScore = addScore(playerList,(num+1),id);
+                System.out.println("Your Current Score: "+(num));
+                totalScore = addScore(playerList,(num),id);
                 if(totalScore >=  30)
                 {
                     break;
@@ -96,7 +116,7 @@ public class LudoGame {
         return rankList;
     }
 
-//=================Checking for Valid Input=====================================
+    //=================Checking for Valid Input=====================================
     private static boolean checkValidId(int id,List<Rank> rankList,List<Player> playerList) {
         int flag=0;
         for (int i=0;i<rankList.size();i++) {
@@ -144,6 +164,16 @@ public class LudoGame {
     //===================Adding Score to Player==============================================
     static int addScore(List<Player> playerList,int currentScore,int id){
         int totalScore=0;
+//        for(int i=0;i<playerList.size();i++)
+//        {
+//            if(playerList.get(i).id==id) {
+//                playerList.get(i).score += (currentScore);
+//                playerList.get(i).secondScore=playerList.get(i).firstScore;
+//                playerList.get(i).firstScore=(currentScore);
+//                totalScore = playerList.get(i).score;
+//                break;
+//            }
+//        }
         playerList.get(id-1).score+=currentScore;
         playerList.get(id-1).secondScore=playerList.get(id-1).firstScore;
         playerList.get(id-1).firstScore=(currentScore);
@@ -152,3 +182,22 @@ public class LudoGame {
     }
 }
 
+
+
+class Rank {
+    Player player;
+    int rank;
+    Rank(Player player,int rank){
+        this.player=player;
+        this.rank=rank;
+    }
+}
+
+class Player {
+    int id;
+    int score;
+    Player(int n){
+        id=n;
+        score=0;
+    }
+}
